@@ -11,6 +11,7 @@ class AsyncXMLRPCServer(SocketServer.ThreadingMixIn,SimpleXMLRPCServer): pass
 # Example class to be published
 global tally_board
 global score_board
+global dummy_score_for_an_event
 global push_registered_map
 
 global team_name_dict
@@ -32,9 +33,10 @@ class RequestObject:
 	def __init__(self, tb_lock, sb_lock):
 		self.tb_lock = tb_lock
 		self.sb_lock = sb_lock
+		self.p_map_lock = threading.Lock()
 	
 	def get_team_name_index(self, teamName):
-		team_name_index = 0
+		team_name_index = -1
 		print "teamName:"
 		print teamName
 		if team_name_dict.has_key(teamName): 	
@@ -42,13 +44,13 @@ class RequestObject:
 		return team_name_index
 
 	def get_medal_type_index(self, medalType):
-		medal_type_index = 0
+		medal_type_index = -1
 		if medal_type_dict.has_key(medalType): 	
 			medal_type_index = medal_type_dict[medalType]
 		return medal_type_index
 
 	def get_event_type_index(self, eventType):
-		event_type_index = 0
+		event_type_index = -1
 		if event_type_dict.has_key(eventType): 	
 			event_type_index = event_type_dict[eventType]
 		return event_type_index
@@ -96,10 +98,11 @@ class RequestObject:
 		team_name_index = self.get_team_name_index(teamName)
 		medal_type_index = self.get_medal_type_index(medalType)
 
-		tally_board[medal_type_index][team_name_index] += 1
-		tally_num = tally_board[medal_type_index][team_name_index]
+		if team_name_index != -1 && medal_type_index != -1:
+			tally_board[medal_type_index][team_name_index] += 1
+			tally_num = tally_board[medal_type_index][team_name_index]
 
-		time.sleep(1)
+		#time.sleep(1)
 
 		self.post_write(self.tb_lock)
 		print True
@@ -112,10 +115,14 @@ class RequestObject:
 		team_name_index = self.get_team_name_index(teamName)
 #		team_name_index =0 
 
-		gold_num = tally_board[0][team_name_index]
-		silver_num = tally_board[1][team_name_index]
+		if team_name_index != -1:
+			gold_num = tally_board[0][team_name_index]
+			silver_num = tally_board[1][team_name_index]
+		else:
+			gold_num = -1
+			silver_num = -1
 
-		time.sleep(3)
+	#	time.sleep(3)
 		self.post_read(self.tb_lock)
 
 		return (gold_num, silver_num)
@@ -131,7 +138,8 @@ class RequestObject:
 #		for x in score:
 #			score_board[event_type_index][count] = x
 #			count += 1
-		score_board[event_type_index] = x
+		if event_type_index != -1:
+			score_board[event_type_index] = score
 
 		self.post_write(self.sb_lock)
 		return True
@@ -142,13 +150,31 @@ class RequestObject:
 		# read here
 		event_type_index = self.get_event_type_index(eventType)
 
-		score = score_board[event_type_index]
+		if event_type_index != -1:
+			score = score_board[event_type_index]
+		else:
+			score = dummy_score_for_an_event; 
 
 		self.post_read(self.sb_lock)
 
 		return score
 
-	def registerClient(self, clientID, eventType): pass
+	def registerClient(self, clientID, eventTypes): # eventTypes is a list of eventType
+		self.p_map_lock.acquire()
+		for eventType in eventTypes:
+			event_type_index = self.get_event_type_index(eventType)
+			if event_type_index != -1:
+				push_registered_map[event_type_index].add(clientID)
+		self.p_map_lock.release()
+
+	def deRegisterClient(self, clientID, eventTypes): # eventTypes is a list of eventType
+		self.p_map_lock.acquire()
+		for eventType in eventTypes:
+			event_type_index = self.get_event_type_index(eventType)
+			if event_type_index != -1:
+				push_registered_map[event_type_index].remove(clientID)
+		self.p_map_lock.release()
+
 	def pushUpdate(self): pass
 
 	def add(self, y) :	# for test
@@ -168,6 +194,8 @@ class RequestObject:
 if __name__ == "__main__":
 	tally_board = [[0 for x in xrange(2)] for x in xrange(2)]
 	score_board = [[0 for x in xrange(3)] for x in xrange(3)]
+	dummy_score_for_an_event = [-1 for x in xrange(3)]
+
 	push_registered_map = [set() for index in xrange(3)]
 
 	team_name_dict = {"Gauls":0, "Romans":1}

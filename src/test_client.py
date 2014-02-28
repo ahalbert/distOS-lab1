@@ -1,21 +1,31 @@
 import xmlrpclib
 import threading
 import time
+import sys
+import socket
 
 global s
 global index_array
 global lock
 
 def handle(index, lock):
-	s = xmlrpclib.ServerProxy('http://localhost:8080')
-	result = 0
-	if index == 1:
-		result = s.incrementMedalTally("Gauls", "Gold")  # Returns 5
-	if index == 0:
-		result = s.getMedalTally("Gauls")
-	lock.acquire()
-	print result
-	lock.release()
+	try:
+		s = xmlrpclib.ServerProxy('http://localhost:8080')
+		result = 0
+		if index == 1:
+			result = s.incrementMedalTally("Gauls", "Gold")  # Returns 5
+		if index == 0:
+			result = s.getMedalTally("Gauls")
+		lock.acquire()
+		print result
+		lock.release()
+	except socket.error, (value,message):
+		print "Could not open socket: " + message
+		return
+	except :
+		info = sys.exc_info()
+		print "Unexpected exception:", info[0],",",info[1]
+		return
 
 if __name__ == "__main__":
 #	s = xmlrpclib.ServerProxy('http://localhost:8080')
