@@ -3,6 +3,8 @@ import threading
 import time
 import sys
 import socket
+from numpy  import *
+from numpy.random import *
 
 global s
 global index_array
@@ -16,6 +18,11 @@ def handle(index, lock):
 			result = s.incrementMedalTally("Gauls", "Gold")  # Returns 5
 		if index == 0:
 			result = s.getMedalTally("Gauls")
+		if index == 3:
+			r_int = randint(0,10, (3))
+			result = s.setScore("Curling",[int(r_int[0]), int(r_int[1]), int(r_int[2])])  # Returns 5
+		if index == 2:
+			result = s.getScore("Curling")
 		lock.acquire()
 		print result
 		lock.release()
@@ -35,7 +42,8 @@ if __name__ == "__main__":
 #	print s.getMedalTally("Gauls")
 #	print s.getMedalTally("Romans")
 
-	index_array = [1,0,0,0,0,1,0,0,0,1,0,0,0]
+	index_array = array([1,0,0,0,0,1,0,0,0,1,0,0,0])
+	index_array += 2
 	lock = threading.Lock()
 	for index in index_array:
 		time.sleep(0.1)

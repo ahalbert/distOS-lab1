@@ -15,6 +15,7 @@ global score_board
 def update_score(score):
 #	sb_lock.acquire()
 	score_board = score
+	print score_board
 	return True
 #	sb_lock.release()
 
@@ -26,14 +27,15 @@ class ServerThread(threading.Thread):
 		self.port = port
 
 		self.localServer = SimpleXMLRPCServer((host_name, port))
-		self.localServer.register_function(update_score, "pushUpadte") #just return a string
+		self.localServer.register_function(update_score, "pushUpdate") #just return a string
 
 	def run(self):
 		self.localServer.serve_forever()
 
 class ClientObject:
-	def __init__(self, host_name, port):
+	def __init__(self, host_name, port, remote_host_name, remote_port):
 		self.address = (host_name, port)
+		self.remote_address = (remote_host_name, remote_port)
 		self.options = {"MEDAL": self.get_medal_tally,
 				"SCORE": self.get_score,
 				"REGI": self.register_events,
@@ -59,13 +61,13 @@ class ClientObject:
 		return result
 
 	def register_events(self, s, args):
-		event_types = ("Curling")
+		event_types = ["Curling"]
 		if len(args) >= 1:
 			event_types = args[0]
 		return s.registerClient(self.address[0]+":"+str(self.address[1]), event_types)
 
 	def de_register_events(self, s, args):
-		event_types = ("Curling")
+		event_types = ["Curling"]
 		if len(args) >= 1:
 			event_types = args[0]
 		return s.deRegisterClient(self.address[0]+":"+str(self.address[1]), event_type)
@@ -79,8 +81,7 @@ class ClientObject:
 
 	def start(self):
 		try:
-			URL = "http://" + self.address[0] + ":" + str(self.address[1]);
-			print URL
+			URL = "http://" + self.remote_address[0] + ":" + str(self.remote_address[1]);
 
 			s = xmlrpclib.ServerProxy(URL)
 		except socket.error, (value,message):
@@ -94,8 +95,6 @@ class ClientObject:
 			line = raw_input('--> ')
 			r = re.split(r'\s+',line)
 			r_len = len(r)
-			print r
-			print "wzd" + str(r_len) + "wzd"
 			command = r[0]
 		
 			if r_len == 1 and '' in r:
@@ -121,7 +120,7 @@ if __name__ == "__main__":
 	server = ServerThread(host_name, port)
 	server.daemon = True;
 	server.start() # The server is now running
-	client = ClientObject(remote_host_name, remote_port)
+	client = ClientObject(host_name, port, remote_host_name, remote_port)
 	client.start()
 
 #	while threading.active_count() > 0:

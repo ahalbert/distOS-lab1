@@ -4,6 +4,8 @@ import time
 import threading
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer,SimpleXMLRPCRequestHandler
+import sys
+import socket
 import xmlrpclib
 
 # Threaded mix-in
@@ -127,7 +129,7 @@ class RequestObject:
 	#	time.sleep(3)
 		self.post_read(self.tb_lock)
 
-		return (gold_num, silver_num)
+		return [gold_num, silver_num]
 
 
 	def setScore(self, eventType, score): # score is a list (score_of_Gauls, score_of_Romans, flag_whether_the_event_is_over)
@@ -142,12 +144,15 @@ class RequestObject:
 #			count += 1
 		if event_type_index != -1:
 			score_board[event_type_index] = score
+			# push to the clients
+			print push_registered_map
+			client_set = push_registered_map[event_type_index]
+			print client_set
+			for clientID in client_set :
+				print clientID
+				self.pushUpdate(clientID, score)
 
-		# push to the clients
-		client_set = push_registered_map[eventType]
-		for clientID in client_set :
-			self.pushUpdate(clientID)
-
+			print "wzd4"
 		self.post_write(self.sb_lock)
 		return True
 
@@ -168,27 +173,27 @@ class RequestObject:
 
 	def registerClient(self, clientID, eventTypes): # eventTypes is a list of eventType
 		self.p_map_lock.acquire()
-		connect_flag = True
 		if clientID not in client_dict:
 			try :
 				URL = "http://" + clientID
 				client_dict[clientID] = [xmlrpclib.ServerProxy(URL), set()]
-			except socket.error, (value,message):
-				print "Could not open socket to the server: " + message
-				connect_flag = False
 			except :
 				info = sys.exc_info()
 				print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
-				connect_flag = False
-			finally :
-				if connect_flag :
-					for eventType in eventTypes:
-						event_type_index = self.get_event_type_index(eventType)
-						if event_type_index != -1:
-							push_registered_map[event_type_index].add(clientID)
-							client_dict[clientID][1].add(eventType)
 				self.p_map_lock.release()
-				return connect_flag
+				return False
+			else :
+				print "wzdwrl"
+				print eventTypes
+				for eventType in eventTypes:
+					print "wzdwrl2"
+					print eventType
+					event_type_index = self.get_event_type_index(eventType)
+					if event_type_index != -1:
+						push_registered_map[event_type_index].add(clientID)
+						client_dict[clientID][1].add(eventType)
+				self.p_map_lock.release()
+				return True
 
 	def deRegisterClient(self, clientID, eventTypes): # eventTypes is a list of eventType
 		self.p_map_lock.acquire()
@@ -203,9 +208,10 @@ class RequestObject:
 		self.p_map_lock.release()
 		return True
 
-	def pushUpdate(self, clientID):
+	def pushUpdate(self, clientID, score):
 			try :
-				client_dict[clientID].pushUpdata(clientID)
+				client_dict[clientID][0].pushUpdate(score)
+				return
 			except socket.error, (value,message):
 				print "Could not open socket to the server: " + message
 				return
