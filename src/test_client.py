@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+
+"""
+Python source code - replace this with a description of the code and write the code below this text.
+"""
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
+
 import threading
 import SocketServer
 import sys
@@ -70,7 +78,7 @@ class ClientObject:
 		event_types = ["Curling"]
 		if len(args) >= 1:
 			event_types = args[0]
-		return s.deRegisterClient(self.address[0]+":"+str(self.address[1]), event_type)
+		return s.deRegisterClient(self.address[0]+":"+str(self.address[1]), event_types)
 
 	def usage(self):
 		print "Usage: 'COMMAND'"
