@@ -71,13 +71,16 @@ class ClientObject:
 	def register_events(self, s, args):
 		event_types = ["Curling"]
 		if len(args) >= 1:
-			event_types = args[0]
+			print "wzd"
+			print args
+			print type(args)
+			event_types = args
 		return s.registerClient(self.address[0]+":"+str(self.address[1]), event_types)
 
 	def de_register_events(self, s, args):
 		event_types = ["Curling"]
 		if len(args) >= 1:
-			event_types = args[0]
+			event_types = args
 		return s.deRegisterClient(self.address[0]+":"+str(self.address[1]), event_types)
 
 	def usage(self):
@@ -110,7 +113,14 @@ class ClientObject:
 				continue
 
 			if command in self.options:
-				print self.options[command](s, r[1:len(r)])
+				print r
+				print r[1:len(r)]
+				try :
+					print self.options[command](s, r[1:len(r)])
+				except :
+					info = sys.exc_info()
+					print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
+					continue
 
 if __name__ == "__main__":
 	host_name = "127.0.0.1"
