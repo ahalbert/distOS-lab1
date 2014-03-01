@@ -85,10 +85,10 @@ class ClientObject:
 
 	def usage(self):
 		print "Usage: 'COMMAND'"
-		print "COMMAND:\n\tMEDAL [TEAMNAME='Gauls']: Get medal number array [gold, silver] for the given team"
-		print "\tSCORE [TEAMNAME='Gauls']: Get scores array for the given team" 
-		print "\tREGI [LIST OF EVENTTYPES=('Curling')]: Register events for push scores" 
-		print "\tDE_REGI [LIST OF EVENTTYPES=('Curling')]: De-register events for push scores"
+		print "COMMAND:\n\tMEDAL [TEAMNAME=Gauls]: Get medal number array [gold, silver] for the given team"
+		print "\tSCORE [TEAMNAME=Gauls]: Get scores array for the given team" 
+		print "\tREGI [EVENTTYPE1=Curling [EVENTTYPE2=Skating [EVENTTYPE3=Skiing]]]: Register events for push scores" 
+		print "\tDE_REGI [EVENTTYPE1=Curling [EVENTTYPE2=Skating [EVENTTYPE3=Skiing]]]: De-register events for push scores"
 
 	def start(self):
 		try:
