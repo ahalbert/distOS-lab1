@@ -25,9 +25,9 @@ global score_board
 global dummy_score_for_an_event
 global push_registered_map
 
-global team_name_dict
-global medal_type_dict
-global event_type_dict
+global team_name_dict # ['Gauls', 'Romans']
+global medal_type_dict # ['Gold', 'Silver']
+global event_type_dict # ['Curling', 'Skating', 'Skiing']
 global client_dict
 
 class ReaderWriterLocks:
@@ -49,8 +49,6 @@ class RequestObject:
 	
 	def get_team_name_index(self, teamName):
 		team_name_index = -1
-		print "teamName:"
-		print teamName
 		if team_name_dict.has_key(teamName): 	
 			team_name_index = team_name_dict[teamName]
 		return team_name_index
@@ -117,7 +115,6 @@ class RequestObject:
 		#time.sleep(1)
 
 		self.post_write(self.tb_lock)
-		print True
 		return True
 
 	def getMedalTally(self, teamName):
@@ -153,11 +150,12 @@ class RequestObject:
 		if event_type_index != -1:
 			score_board[event_type_index] = score
 			# push to the clients
+			print "registered_map"
 			print push_registered_map
 			client_set = push_registered_map[event_type_index]
-			print client_set
+			print "client_dict"
+			print client_dict
 			for clientID in client_set :
-				print clientID
 				self.pushUpdate(clientID, score)
 
 			print "wzd4"
@@ -180,16 +178,25 @@ class RequestObject:
 		return score
 
 	def registerClient(self, clientID, eventTypes): # eventTypes is a list of eventType
-		self.p_map_lock.acquire()
 		if clientID not in client_dict:
+			self.p_map_lock.acquire()
+			print "+++++++++++++++++regi first+++++++++++++++++"
 			try :
 				URL = "http://" + clientID
 				client_dict[clientID] = [xmlrpclib.ServerProxy(URL), set()]
 			except :
 				info = sys.exc_info()
 				print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
-				self.p_map_lock.release()
-				return False
+				try :
+					del client_dict[clientID]
+				except :
+					info = sys.exc_info()
+					print "Unexpected exception:", info[0],",",info[1]
+					self.p_map_lock.release()
+					return False
+				else :
+					self.p_map_lock.release()
+					return False
 			else :
 				print "wzdwrl"
 				print eventTypes
@@ -202,6 +209,18 @@ class RequestObject:
 						client_dict[clientID][1].add(eventType)
 				self.p_map_lock.release()
 				return True
+		else :
+			self.p_map_lock.acquire()
+			print "+++++++++++++++++regi else+++++++++++++++++"
+			for eventType in eventTypes:
+				print "wzdwrl3"
+				print eventType
+				event_type_index = self.get_event_type_index(eventType)
+				if event_type_index != -1:
+					push_registered_map[event_type_index].add(clientID)
+					client_dict[clientID][1].add(eventType)
+			self.p_map_lock.release()
+			return True
 
 	def deRegisterClient(self, clientID, eventTypes): # eventTypes is a list of eventType
 		self.p_map_lock.acquire()
