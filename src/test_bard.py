@@ -20,15 +20,15 @@ global lock
 
 def handle(index, lock):
 	try:
-		s = xmlrpclib.ServerProxy('http://localhost:8080')
+		s = xmlrpclib.ServerProxy('http://localhost:8001')
 		result = 0
 		if index == 1:
 			result = s.incrementMedalTally("Gauls", "Gold")  # Returns 5
 		if index == 0:
 			result = s.getMedalTally("Gauls")
 		if index == 3:
-			r_int = randint(0,10, (3))
-			result = s.setScore("Curling",[int(r_int[0]), int(r_int[1]), int(r_int[2])])  # Returns 5
+			r_int = randint(0,10, (2))
+			result = s.setScore("Curling",[int(r_int[0]), int(r_int[1])])  # Returns 5
 		if index == 2:
 			result = s.getScore("Curling")
 		lock.acquire()
