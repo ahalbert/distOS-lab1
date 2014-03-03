@@ -18,27 +18,33 @@ class Bard(threading.Thread):
 
     def run(self):
         if self.mode == "tally":
-            self.changeMedalTally()
+            self.updateTally()
         if self.mode == "score":
             self.updateScore()
 
     def updateScore(self):
         score = (0,0,False)
-        should_end == False
+        should_end = False
         while not score_exit:
+            time.sleep(5)
             team, sport = get_team(), get_sport()
             if random.random >= .99:
                 should_end == True
-            if team == "Romans":
-                proxy.setScore(sport, (score[1]+1, score[2], should_end))
-            else:
-                proxy.setScore(sport, (score[1], score[2]+1, should_end))
+            if random.random >= .8:
+                lock.acquire()
+                if team == "Romans":
+                    proxy.setScore(sport, (score[1]+1, score[2], should_end))
+                else:
+                    proxy.setScore(sport, (score[1], score[2]+1, should_end))
+                lock.release()
 
     def updateTally(self):
         while not tally_exit:
             time.sleep(5)
             if random.random >= .75:
-                proxy.incrementMedalTaly(get_team(), get_medal_type())
+                lock.acquire()
+                proxy.incrementMedalTally(get_team(), get_medal_type())
+                lock.release()
 
 def get_medal_type():
     num = random.randrange(1,4)
@@ -66,6 +72,7 @@ def get_team():
     else:
         return "Romans"
 
+lock = threading.Lock()
 proxy = xmlrpclib.ServerProxy("http://localhost:8080") 
 tally_thread = Bard("tally")
 tally_thread.start()
