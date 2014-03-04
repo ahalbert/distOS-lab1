@@ -26,7 +26,7 @@ global dummy_score_for_an_event
 global push_registered_map
 
 global team_name_dict # ['Gauls', 'Romans']
-global medal_type_dict # ['Gold', 'Silver']
+global medal_type_dict # ['Gold', 'Silver', 'Bronze']
 global event_type_dict # ['Curling', 'Skating', 'Skiing']
 global client_dict
 
@@ -127,14 +127,16 @@ class RequestObject:
 		if team_name_index != -1:
 			gold_num = tally_board[0][team_name_index]
 			silver_num = tally_board[1][team_name_index]
+			bronze_num = tally_board[2][team_name_index]
 		else:
 			gold_num = -1
 			silver_num = -1
+			bronze_num = -1
 
 	#	time.sleep(3)
 		self.post_read(self.tb_lock)
 
-		return [gold_num, silver_num]
+		return [gold_num, silver_num, bronze_num]
 
 
 	def setScore(self, eventType, score): # score is a list (score_of_Gauls, score_of_Romans, flag_whether_the_event_is_over)
@@ -262,7 +264,7 @@ class RequestObject:
 #		return result
 
 if __name__ == "__main__":
-	tally_board = [[0 for x in xrange(2)] for x in xrange(2)]
+	tally_board = [[0 for x in xrange(3)] for x in xrange(2)]
 	score_board = [[0 for x in xrange(3)] for x in xrange(3)]
 	client_dict = {}
 	dummy_score_for_an_event = [-1 for x in xrange(3)]
@@ -270,7 +272,7 @@ if __name__ == "__main__":
 	push_registered_map = [set() for index in xrange(3)]
 
 	team_name_dict = {"Gauls":0, "Romans":1}
-	medal_type_dict = {"Gold":0, "Silver":1}
+	medal_type_dict = {"Gold":0, "Silver":1, "Bronze":2}
 	event_type_dict = {"Curling":0, "Skating":1, "Skiing":2}
 	# Instantiate and bind to localhost:8080
 	server = AsyncXMLRPCServer(('', 8080), SimpleXMLRPCRequestHandler)
