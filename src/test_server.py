@@ -264,7 +264,7 @@ class RequestObject:
 #		return result
 
 if __name__ == "__main__":
-	tally_board = [[0 for x in xrange(3)] for x in xrange(2)]
+	tally_board = [[0 for x in xrange(2)] for x in xrange(3)]
 	score_board = [[0 for x in xrange(3)] for x in xrange(3)]
 	client_dict = {}
 	dummy_score_for_an_event = [-1 for x in xrange(3)]

@@ -32,19 +32,22 @@ class Bard(threading.Thread):
         Updates score to tell if event should end or if score should be updated
         Uses a remote procedure call to update the score
         """
-        score = (0,0,False)
+        score = {"Curling":(0,0,False),"Skating":(0,0,False), "Skiing":(0,0,False)}
         should_end = False
         while not score_exit:
             time.sleep(5)
+            print score
             team, sport = get_team(), get_sport()
-            if random.random >= .99:
+            if random.random() >= .98:
                 should_end == True
-            if random.random >= .8:
+            if random.random() >= .8:
                 lock.acquire()
                 if team == "Gauls":
-                    proxy.setScore(sport, (score[1]+1, score[2], should_end))
+                    score[sport] = (score[sport][0]+1, score[sport][1], should_end)
+                    proxy.setScore(sport, score[sport])
                 else:
-                    proxy.setScore(sport, (score[1], score[2]+1, should_end))
+                    score[sport] = (score[sport][0], score[sport][1]+1, should_end)
+                    proxy.setScore(sport, score[sport])
                 lock.release()
 
     def updateTally(self):
