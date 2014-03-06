@@ -6,8 +6,6 @@ Python source code - replace this with a description of the code and write the c
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-# http://gumuz.looze.net/
-
 import time
 import threading
 import SocketServer
@@ -15,6 +13,7 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer,SimpleXMLRPCRequestHandler
 import sys
 import socket
 import xmlrpclib
+import server_config as cf
 
 # Threaded mix-in
 class AsyncXMLRPCServer(SocketServer.ThreadingMixIn,SimpleXMLRPCServer): pass 
@@ -152,15 +151,12 @@ class RequestObject:
 		if event_type_index != -1:
 			score_board[event_type_index] = score
 			# push to the clients
-			print "registered_map"
-			print push_registered_map
+#			print "registered_map"
+#			print push_registered_map
 			client_set = push_registered_map[event_type_index]
-			print "client_dict"
-			print client_dict
 			for clientID in client_set :
-				self.pushUpdate(clientID, score)
+				self.pushUpdate(clientID, eventType, score)
 
-			print "wzd4"
 		self.post_write(self.sb_lock)
 		return True
 
@@ -182,7 +178,7 @@ class RequestObject:
 	def registerClient(self, clientID, eventTypes): # eventTypes is a list of eventType
 		if clientID not in client_dict:
 			self.p_map_lock.acquire()
-			print "+++++++++++++++++regi first+++++++++++++++++"
+#			print "+++++++++++++++++regi first+++++++++++++++++"
 			try :
 				URL = "http://" + clientID
 				client_dict[clientID] = [xmlrpclib.ServerProxy(URL), set()]
@@ -200,11 +196,9 @@ class RequestObject:
 					self.p_map_lock.release()
 					return False
 			else :
-				print "wzdwrl"
-				print eventTypes
+#				print eventTypes
 				for eventType in eventTypes:
-					print "wzdwrl2"
-					print eventType
+#					print eventType
 					event_type_index = self.get_event_type_index(eventType)
 					if event_type_index != -1:
 						push_registered_map[event_type_index].add(clientID)
@@ -213,10 +207,9 @@ class RequestObject:
 				return True
 		else :
 			self.p_map_lock.acquire()
-			print "+++++++++++++++++regi else+++++++++++++++++"
+#			print "+++++++++++++++++regi else+++++++++++++++++"
 			for eventType in eventTypes:
-				print "wzdwrl3"
-				print eventType
+#				print eventType
 				event_type_index = self.get_event_type_index(eventType)
 				if event_type_index != -1:
 					push_registered_map[event_type_index].add(clientID)
@@ -237,9 +230,9 @@ class RequestObject:
 		self.p_map_lock.release()
 		return True
 
-	def pushUpdate(self, clientID, score):
+	def pushUpdate(self, clientID, eventType, score):
 			try :
-				client_dict[clientID][0].pushUpdate(score)
+				client_dict[clientID][0].pushUpdate(eventType, score)
 				return
 			except socket.error, (value,message):
 				print "Could not open socket to the server: " + message
@@ -248,20 +241,6 @@ class RequestObject:
 				info = sys.exc_info()
 				print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
 				return
-
-	def add(self, y) :	# for test
-		time.sleep(5)
-		www = [1,2,3]
-		www = (3,5,8)
-		print www
-		return self.__class__.sum_val
-#		self.tb_lock.lock_1.acquire()
-#		self.__class__.sum_val += y
-#		result = self.__class__.sum_val
-#		print result
-#		time.sleep(5)
-#		self.tb_lock.lock_1.release()
-#		return result
 
 if __name__ == "__main__":
 	tally_board = [[0 for x in xrange(2)] for x in xrange(3)]
@@ -275,7 +254,7 @@ if __name__ == "__main__":
 	medal_type_dict = {"Gold":0, "Silver":1, "Bronze":2}
 	event_type_dict = {"Curling":0, "Skating":1, "Skiing":2}
 	# Instantiate and bind to localhost:8080
-	server = AsyncXMLRPCServer(('', 8080), SimpleXMLRPCRequestHandler)
+	server = AsyncXMLRPCServer(('', int(cf.server_port)), SimpleXMLRPCRequestHandler)
 
 	# Register example object instance
 	# tb_lock = threading.Lock();
