@@ -1,6 +1,3 @@
-Curling: [1, 2, False]
-Skating: [0, 0, False]
-Skiing: [0, 0, False]
-]
-]
-
+Curling: [0, 0, 0]
+Skating: [2, 1, False]
+Skiing: [0, 0, 0]

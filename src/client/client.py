@@ -189,7 +189,8 @@ class ClientObject:
 			print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
 			return
 		while True:
-			line = raw_input('--> ')
+			sys.stdout.write('-> ')
+			line = raw_input('')
 			r = re.split(r'\s+',line)
 			r_len = len(r)
 			command = r[0]
