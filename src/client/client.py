@@ -2,6 +2,8 @@
 
 """
 Python source code - replace this with a description of the code and write the code below this text.
+authored by Zuodong Wu, Armand Halbert
+version 1.0, 03/07/2014
 """
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4

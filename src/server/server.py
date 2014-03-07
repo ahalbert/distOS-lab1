@@ -2,6 +2,8 @@
 
 """
 Python source code - replace this with a description of the code and write the code below this text.
+authored by Zuodong Wu, Armand Halbert
+version 1.0, 03/07/2014
 """
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
@@ -116,6 +118,7 @@ class RequestObject:
 
 
 		# unlock
+		#time.sleep(2)
 		self.post_write(self.tb_lock)
 		return True
 
@@ -124,6 +127,7 @@ class RequestObject:
 		# lock
 		self.pre_read(self.tb_lock)
 
+		#time.sleep(2)
 		# read here
 		team_name_index = self.get_team_name_index(teamName)
 
@@ -136,6 +140,7 @@ class RequestObject:
 			silver_num = -1
 			bronze_num = -1
 
+		#time.sleep(2)
 		# unlock
 		self.post_read(self.tb_lock)
 

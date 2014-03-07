@@ -1,0 +1,25 @@
+-> REGI Curling
+True
+-> 
+Curling:[2, 0, False]
+72.19.125.53 - - [07/Mar/2014 00:40:35] "POST /RPC2 HTTP/1.1" 200 -
+
+Curling:[2, 1, False]
+72.19.125.53 - - [07/Mar/2014 00:40:37] "POST /RPC2 HTTP/1.1" 200 -
+
+Curling:[2, 1, True]
+72.19.125.53 - - [07/Mar/2014 00:40:39] "POST /RPC2 HTTP/1.1" 200 -
+
+Usage: 'COMMAND'
+COMMAND:
+        MEDAL [TEAMNAME=Gauls]: Get medal number array [gold, silver] for the given team
+        SCORE [EVENTTYPE=Curling]: Get scores array for the given event type
+        REGI [EVENTTYPE1=Curling [EVENTTYPE2=Skating [EVENTTYPE3=Skiing]]]: Register events for push scores
+        DE_REGI [EVENTTYPE1=Curling [EVENTTYPE2=Skating [EVENTTYPE3=Skiing]]]: De-register events for push scores
+-> MEDAL Gauls
+[4, 1, 0]
+-> DE_REGI Curling
+True
+-> SCORE Curling
+[2, 1, True]
+-> 
