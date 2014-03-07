@@ -54,7 +54,6 @@ def get_event_type_index(eventType):
 	return event_type_index
 
 def update_score(event_type, score):
-#	sb_lock.acquire()
 	event_type_index = get_event_type_index(event_type)
 	if event_type_index != -1:
 		score_board[event_type_index] = score
@@ -63,14 +62,12 @@ def update_score(event_type, score):
 			s_file_data[event_type_index] = str(event_type) + ': ' + str(score) + '\n'
 			s_file.seek(0)
 			s_file.writelines(s_file_data)
-		#s_file_data = s_file.readlines()
-		#s_file_data[event_type_index] = 		
 		print ''
 		print event_type + ':' + str(score)
 	return True
-#	sb_lock.release()
 
 class ServerThread(threading.Thread):
+	"""a RPC server listening to push request from the server of the whole system"""
 	def __init__(self, host_name, port):
 		threading.Thread.__init__(self)
 
@@ -81,13 +78,13 @@ class ServerThread(threading.Thread):
 			sys.exit(1)
 
 		self.localServer = SimpleXMLRPCServer((host_name, port))
-		self.localServer.register_function(update_score, "pushUpdate") #just return a string
+		self.localServer.register_function(update_score, "pushUpdate") # register update_score with an alias name pushUpdate
 		
 	def __init_file(self) :
 		try :
+			# initialize output files
 			s_file = open('./log/score_board.out', 'w')
 			s_file.writelines([var[0] + ': ' + str(list(score_board[var[1]]))+'\n' for var in sorted(event_type_dict.iteritems(), key=lambda d:d[1], reverse=False)]) 
-#			s_file.writelines([str(var)+'\n' for var in score_board])
 			s_file.close()
 
 			t_file = open('./log/tally_board.out', 'w')
@@ -95,11 +92,9 @@ class ServerThread(threading.Thread):
 			tally_board_transpose = np.transpose(tally_board)
 
 			t_file.writelines([var[0] + ': ' + str(list(tally_board_transpose[var[1]]))+'\n' for var in sorted(team_name_dict.iteritems(), key=lambda d:d[1], reverse = False)]) 
-#			t_file.writelines([str(var)+'\n' for var in tally_board_transpose])
 			t_file.close()
+			# end of initialize output files
 
-#			for i in range(len(score_board)) :
-#				self.s_file.writeline
 		except :
 			info = sys.exc_info()
 			print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
@@ -130,6 +125,7 @@ class ClientObject:
 		if team_name_index != -1 :
 			tally_board[team_name_index] = result
 
+			# write obtained medal tally into the output file
 			with open(t_file_name, 'r+') as t_file :
 				t_file_data = t_file.readlines()
 				t_file_data[team_name_index] = str(team_name) + ': ' + str(result) + '\n'
@@ -143,13 +139,12 @@ class ClientObject:
 		if len(args) >= 1:
 			event_type = args[0]
 		result = s.getScore(event_type)
-#		sb_lock.acquire()
 
 		event_type_index = get_event_type_index(event_type)
 		if event_type_index != -1:
 			score_board[event_type_index] = result
-	#		sb_lock.release()
 
+			# write obtained scores into the output file
 			with open(s_file_name, 'r+') as s_file :
 				s_file_data = s_file.readlines()
 				s_file_data[event_type_index] = str(event_type) + ': ' + str(result)  + '\n'
@@ -191,11 +186,11 @@ class ClientObject:
 		while True:
 			sys.stdout.write('-> ')
 			line = raw_input('')
-			r = re.split(r'\s+',line)
+			r = re.split(r'\s+',line) # parse input parameters (separated by blank(s))
 			r_len = len(r)
 			command = r[0]
 		
-			if r_len == 1 and '' in r:
+			if r_len == 1 and '' in r: # if no parameters, show the command instruction message
 				self.usage()
 				continue
 
@@ -209,7 +204,7 @@ class ClientObject:
 
 if __name__ == "__main__":
 	if cf.self_ip == '' :
-		host_name = socket.gethostbyname(socket.gethostname())
+		host_name = socket.gethostbyname(socket.gethostname()) # try to automatically find the local ip, sometimes it may fail, so I suggest to denote the local ip in the configure file.
 	else :
 		host_name = cf.self_ip
 	port = cf.self_port
@@ -217,16 +212,14 @@ if __name__ == "__main__":
 	remote_host_name = cf.server_ip
 	remote_port = cf.server_port
 
-#	sb_lock = threading.Lock()
-#	output_lock = threading.Lock()
 
+	# run RPC server
 	server = ServerThread(host_name, port)
-	server.daemon = True;
+	server.daemon = True; # allow the thread exit right after the main thread exits by keyboard interruption.
 	server.start() # The server is now running
 	client = ClientObject(host_name, port, remote_host_name, remote_port)
 	client.start()
+	# end of run RPC server
 
-#	while threading.active_count() > 0:
-#		time.sleep(0.1)
 	server.join(1)
 

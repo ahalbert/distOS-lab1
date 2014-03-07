@@ -102,6 +102,7 @@ class RequestObject:
 		lock.lock_2.release()
 
 	def incrementMedalTally(self, teamName, medalType):
+		"""increase medal for a team"""
 		# lock
 		self.pre_write(self.tb_lock)
 
@@ -119,6 +120,7 @@ class RequestObject:
 		return True
 
 	def getMedalTally(self, teamName):
+		"""get medal for a team"""
 		# lock
 		self.pre_read(self.tb_lock)
 
@@ -141,6 +143,7 @@ class RequestObject:
 
 
 	def setScore(self, eventType, score): # score is a list (score_of_Gauls, score_of_Romans, flag_whether_the_event_is_over)
+		"""set score"""
 		# lock
 		self.pre_write(self.sb_lock)
 
@@ -151,14 +154,18 @@ class RequestObject:
 			score_board[event_type_index] = score
 			# push to the clients
 			client_set = push_registered_map[event_type_index]
+
 			for clientID in client_set :
-				self.pushUpdate(clientID, eventType, score)
+				self.__pushUpdate(clientID, eventType, score)
+
 
 		# unlock
 		self.post_write(self.sb_lock)
 		return True
 
 	def getScore(self, eventType):
+		"""get score"""
+		# lock
 		self.pre_read(self.sb_lock)
 
 		# read here
@@ -169,11 +176,13 @@ class RequestObject:
 		else:
 			score = dummy_score_for_an_event; 
 
+		# unlock
 		self.post_read(self.sb_lock)
 
 		return score
 
 	def registerClient(self, clientID, eventTypes): # eventTypes is a list of eventType
+		"""register client with event(s)"""
 		if clientID not in client_dict:
 			self.p_map_lock.acquire()
 #			print "+++++++++++++++++regi first+++++++++++++++++"
@@ -216,6 +225,7 @@ class RequestObject:
 			return True
 
 	def deRegisterClient(self, clientID, eventTypes): # eventTypes is a list of eventType
+		"""de-register client from event(s)"""
 		self.p_map_lock.acquire()
 		if clientID in client_dict:
 			for eventType in eventTypes:
@@ -228,17 +238,18 @@ class RequestObject:
 		self.p_map_lock.release()
 		return True
 
-	def pushUpdate(self, clientID, eventType, score):
-			try :
-				client_dict[clientID][0].pushUpdate(eventType, score)
-				return
-			except socket.error, (value,message):
-				print "Could not open socket to the server: " + message
-				return
-			except :
-				info = sys.exc_info()
-				print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
-				return
+	def __pushUpdate(self, clientID, eventType, score):
+		"""private method, used to push scores to clients"""
+		try :
+			client_dict[clientID][0].pushUpdate(eventType, score) # revoke pushUpdate(*) in the client side using RPC.
+			return
+		except socket.error, (value,message):
+			print "Could not open socket to the remote instance: " + message
+			return
+		except :
+			info = sys.exc_info()
+			print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
+			return
 
 if __name__ == "__main__":
 	tally_board = [[0 for x in xrange(2)] for x in xrange(3)]

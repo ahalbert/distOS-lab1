@@ -14,6 +14,7 @@ import xmlrpclib
 import bard_config as cf
 from sets import Set
 import sys
+import socket
 
 """
 Bard class - Thin client that updates the server when medal tally or score needs to be changed.
@@ -33,7 +34,14 @@ class Bard():
 
     def start(self):
         """ Launches the update function"""
-	self.updateScore()
+	try :
+		self.updateScore()
+	except socket.error, (value,message):
+		print "Could not open socket to the server: " + message
+		return
+	except :
+		info = sys.exc_info()
+		print "Unexpected exception, cannot connect to the server:", info[0],",",info[1]
 
     def updateScore(self):
         """
@@ -53,7 +61,7 @@ class Bard():
             print score
 	    event_end_prob = cf.event_end_prob
             if random.random() >= 1 - event_end_prob:
-		event_end_prob += 0.02
+		event_end_prob += cf.event_end_prob_incr_per_interval
                 should_end = True
 
 		end_event_num += 1
