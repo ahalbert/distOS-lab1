@@ -27,20 +27,13 @@ score_exit = False
 end_event_set = Set([])
 total_event_num = 3
 
-class Bard(threading.Thread):
-    """Threads that manage updatescore and updateTally. Inherits threading.Thread methods"""
-    def __init__(self, mode, exit_event):
-        threading.Thread.__init__(self)
-        self.mode = mode
-	self.daemon = True
-	self.exit_event = exit_event
+class Bard():
+    """Class that manage updatescore and updateTally. Inherits threading.Thread methods"""
+#    def __init__(self):
 
-    def run(self):
-        """Overrides threading.run. Launches the proper function based on how the class was init"""
-        if self.mode == "tally":
-            self.updateTally()
-        if self.mode == "score":
-            self.updateScore()
+    def start(self):
+        """ Launches the update function"""
+	self.updateScore()
 
     def updateScore(self):
         """
@@ -88,27 +81,14 @@ class Bard(threading.Thread):
 			should_end = False
 			continue
             if random.random() >= 1 - cf.score_update_prob:
-                lock.acquire()
                 if team == "Gauls":
                     score[sport] = (score[sport][0]+1, score[sport][1], should_end)
                     proxy.setScore(sport, score[sport])
                 else:
                     score[sport] = (score[sport][0], score[sport][1]+1, should_end)
                     proxy.setScore(sport, score[sport])
-                lock.release()
-	print 'wzd'
-        print score
-	self.exit_event.set()
-	sys.exit(1)
-
-    def updateTally(self):
-        """Updates medal tally, incremeninting by making a remote procedure call to the server"""
-        while not tally_exit:
-            time.sleep(3)
-            if random.random >= .75:
-                lock.acquire()
-                proxy.incrementMedalTally(get_team(), get_medal_type())
-                lock.release()
+	print score
+	return
 
 def get_medal_type():
     """Returns a random medal type"""
@@ -141,14 +121,5 @@ def get_team():
 
 lock = threading.Lock()
 proxy = xmlrpclib.ServerProxy("http://" + cf.server_ip + ":" + cf.server_port)
-#tally_thread = Bard("tally")
-#tally_thread.start()
-exit_event = threading.Event()
-score_thread = Bard("score", exit_event)
+score_thread = Bard()
 score_thread.start()
-#try:
-while not exit_event.is_set():
-	time.sleep(1)
-#except KeyboardInterrupt:
-#    tally_exit = True
-#    score_exit = True
