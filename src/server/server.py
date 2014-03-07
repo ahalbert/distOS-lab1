@@ -30,6 +30,7 @@ global event_type_dict # ['Curling', 'Skating', 'Skiing']
 global client_dict
 
 class ReaderWriterLocks:
+	"""Structure to store related locks for realizing the second type reader and writer lock"""
 	def __init__(self):
 		self.lock_1 = threading.Lock()
 		self.lock_2 = threading.Lock()
@@ -101,6 +102,7 @@ class RequestObject:
 		lock.lock_2.release()
 
 	def incrementMedalTally(self, teamName, medalType):
+		# lock
 		self.pre_write(self.tb_lock)
 
 		# write here
@@ -108,55 +110,51 @@ class RequestObject:
 		medal_type_index = self.get_medal_type_index(medalType)
 
 		if team_name_index != -1 and medal_type_index != -1:
-			tally_board[medal_type_index][team_name_index] += 1
+			tally_board[medal_type_index][team_name_index] += 1 # increase medal tally number of the medalType
 			tally_num = tally_board[medal_type_index][team_name_index]
 
-		#time.sleep(1)
 
+		# unlock
 		self.post_write(self.tb_lock)
 		return True
 
 	def getMedalTally(self, teamName):
+		# lock
 		self.pre_read(self.tb_lock)
 
 		# read here
 		team_name_index = self.get_team_name_index(teamName)
-#		team_name_index =0 
 
 		if team_name_index != -1:
 			gold_num = tally_board[0][team_name_index]
 			silver_num = tally_board[1][team_name_index]
 			bronze_num = tally_board[2][team_name_index]
-		else:
+		else: # the teamName is invalid
 			gold_num = -1
 			silver_num = -1
 			bronze_num = -1
 
-	#	time.sleep(3)
+		# unlock
 		self.post_read(self.tb_lock)
 
 		return [gold_num, silver_num, bronze_num]
 
 
 	def setScore(self, eventType, score): # score is a list (score_of_Gauls, score_of_Romans, flag_whether_the_event_is_over)
+		# lock
 		self.pre_write(self.sb_lock)
 
 		# write here
 		event_type_index = self.get_event_type_index(eventType)
 
-#		count = 0
-#		for x in score:
-#			score_board[event_type_index][count] = x
-#			count += 1
 		if event_type_index != -1:
 			score_board[event_type_index] = score
 			# push to the clients
-#			print "registered_map"
-#			print push_registered_map
 			client_set = push_registered_map[event_type_index]
 			for clientID in client_set :
 				self.pushUpdate(clientID, eventType, score)
 
+		# unlock
 		self.post_write(self.sb_lock)
 		return True
 

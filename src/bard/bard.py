@@ -53,7 +53,6 @@ class Bard():
             print score
 	    event_end_prob = cf.event_end_prob
             if random.random() >= 1 - event_end_prob:
-		print 'wrl'
 		event_end_prob += 0.02
                 should_end = True
 
