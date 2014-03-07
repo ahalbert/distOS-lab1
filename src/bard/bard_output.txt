@@ -1,0 +1,11 @@
+{'Skating': (0, 0, False), 'Curling': (0, 0, False), 'Skiing': (0, 0, False)}
+{'Skating': (0, 0, False), 'Curling': (0, 0, False), 'Skiing': (0, 0, False)}
+{'Skating': (0, 1, False), 'Curling': (0, 0, False), 'Skiing': (0, 0, False)}
+wrl
+{'Skating': (0, 1, True), 'Curling': (0, 0, False), 'Skiing': (0, 0, False)}
+{'Skating': (0, 1, True), 'Curling': (0, 0, False), 'Skiing': (0, 0, False)}
+{'Skating': (0, 1, True), 'Curling': (1, 0, False), 'Skiing': (0, 0, False)}
+wrl
+{'Skating': (0, 1, True), 'Curling': (1, 0, True), 'Skiing': (0, 0, False)}
+wrl
+{'Skating': (0, 1, True), 'Curling': (1, 0, True), 'Skiing': (0, 0, True)}
